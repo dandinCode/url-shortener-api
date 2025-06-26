@@ -10,7 +10,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private usersRepository: Repository<User>,
-    ) {}
+    ) { }
 
     async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
         const existing = await this.usersRepository.findOneBy({ email: createUserDto.email });
@@ -18,8 +18,8 @@ export class UsersService {
 
         const hash = await bcrypt.hash(createUserDto.password, 10);
         const user = this.usersRepository.create({
-        email: createUserDto.email,
-        password: hash,
+            email: createUserDto.email,
+            password: hash,
         });
 
         const saved = await this.usersRepository.save(user);
