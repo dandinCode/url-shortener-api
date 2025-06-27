@@ -22,7 +22,7 @@ describe('Auth E2E', () => {
 
   it('should register and login a user', async () => {
     const user = {
-      email: 'e2e@email.com',
+       email: `test${Date.now()}@email.com`,
       password: '123456',
     };
 
