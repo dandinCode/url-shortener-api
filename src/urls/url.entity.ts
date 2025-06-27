@@ -5,6 +5,8 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
+  DeleteDateColumn
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -16,17 +18,21 @@ export class Url {
   @Column()
   originalUrl: string;
 
-  @Column({ unique: true, length: 6 })
+  @Column({ length: 6, unique: true })
   shortCode: string;
 
   @Column({ default: 0 })
-  clickCount: number;
+  clicks: number;
 
-  @ManyToOne(() => User, user => user.urls, { nullable: true })
-  user: User;
+  @ManyToOne(() => User, (user) => user.urls, { nullable: true })
+  @JoinColumn({ name: 'ownerId' })
+  owner: User;
 
   @Column({ nullable: true })
-  deletedAt: Date;
+  ownerId: number | null;
+
+  @DeleteDateColumn()
+  deletedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
