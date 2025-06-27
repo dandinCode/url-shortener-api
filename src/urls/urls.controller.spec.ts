@@ -12,6 +12,7 @@ describe('UrlsController', () => {
     create: jest.fn(),
     redirect: jest.fn(),
     findByOwner: jest.fn(),
+    update: jest.fn(),
     remove: jest.fn(),
   };
 
@@ -54,6 +55,23 @@ describe('UrlsController', () => {
 
     expect(result).toBe(urls);
     expect(mockService.findByOwner).toHaveBeenCalledWith(1);
+  });
+
+  it('should call urlsService.update with correct values', async () => {
+    const code = 'xyz789';
+    const userId = 1;
+    const dto = { originalUrl: 'https://novaurl.com' };
+
+    const req = {
+      user: { id: userId },
+    } as any;
+
+    const updateSpy = jest.spyOn(service, 'update').mockResolvedValue();
+
+    const result = await controller.update(code, req, dto);
+
+    expect(updateSpy).toHaveBeenCalledWith(code, userId, dto);
+    expect(result).toEqual({ message: 'URL atualizada com sucesso' });
   });
 
   it('should remove a URL owned by the user', async () => {

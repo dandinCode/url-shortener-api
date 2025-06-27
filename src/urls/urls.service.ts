@@ -3,6 +3,7 @@ import { UrlRepository } from './repositories/url.repository';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { randomBytes } from 'crypto';
 import { Url } from './url.entity';
+import { UpdateUrlDto } from './dto/update-url.dto';
 
 @Injectable()
 export class UrlsService {
@@ -21,6 +22,16 @@ export class UrlsService {
         });
     }
 
+    async update(code: string, userId: number, dto: UpdateUrlDto): Promise<void> {
+        const url = await this.urlRepository.findByShortCode(code);
+
+        if (!url || url.ownerId !== userId) {
+            throw new ForbiddenException('Acesso negado');
+        }
+
+        await this.urlRepository.updateUrl(url.id, dto.originalUrl);
+    }
+
     async findByOwner(userId: number): Promise<Url[]> {
         return this.urlRepository.findByOwner(userId);
     }
@@ -34,11 +45,6 @@ export class UrlsService {
 
     async remove(code: string, userId: number): Promise<void> {
         const url = await this.urlRepository.findByShortCode(code);
-        console.log('Tentando deletar URL:', {
-            code,
-            urlOwner: url?.ownerId,
-            userId,
-        });
         if (!url || url.ownerId !== userId) throw new ForbiddenException('Acesso negado');
         await this.urlRepository.deleteUrl(code);
     }

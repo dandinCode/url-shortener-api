@@ -52,7 +52,7 @@ describe('Auth E2E', () => {
     expect(res.body.shortUrl).toMatch(/http:\/\/localhost:3000\//);
 
     const code = res.body.shortUrl.split('/').pop();
-    await request(app.getHttpServer()).get(`/${code}`).expect(302);
+    await request(app.getHttpServer()).get(`/urls/${code}`).expect(302);
   });
 
   it('should allow logged user to create and list URLs', async () => {
@@ -72,13 +72,39 @@ describe('Auth E2E', () => {
     expect(Array.isArray(list.body)).toBe(true);
   });
 
+  it('should allow logged user to update own URL', async () => {
+    const create = await request(app.getHttpServer())
+      .post('/urls')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ originalUrl: 'https://nestjs.com/update' })
+      .expect(201);
+
+    const code = create.body.shortUrl.split('/').pop();
+    expect(code).toBeDefined();
+
+    const update = await request(app.getHttpServer())
+      .patch(`/urls/${code}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ originalUrl: 'https://nestjs.com/atualizado' })
+      .expect(200);
+
+    expect(update.body).toEqual({ message: 'URL atualizada com sucesso' });
+
+    const list = await request(app.getHttpServer())
+      .get('/urls')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    const updatedUrl = list.body.find((url: any) => url.shortCode === code);
+    expect(updatedUrl.originalUrl).toBe('https://nestjs.com/atualizado');
+  });
+
   it('should allow logged user to delete own URL', async () => {
     const create = await request(app.getHttpServer())
       .post('/urls')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ originalUrl: 'https://nestjs.com/delete' })
       .expect(201);
-    console.log('URL criada:', create.body);
     const code = create.body.shortUrl.split('/').pop();
 
     await request(app.getHttpServer())

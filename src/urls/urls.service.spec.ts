@@ -3,11 +3,13 @@ import { UrlsService } from './urls.service';
 import { UrlRepository } from './repositories/url.repository';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { UpdateUrlDto } from './dto/update-url.dto';
 
 const mockRepo = {
   createUrl: jest.fn(),
   findByShortCode: jest.fn(),
   incrementClicks: jest.fn(),
+  updateUrl: jest.fn(),
   deleteUrl: jest.fn(),
   findByOwner: jest.fn(),
 };
@@ -49,6 +51,38 @@ describe('UrlsService', () => {
   it('should throw if url not found on redirect', async () => {
     mockRepo.findByShortCode.mockResolvedValue(null);
     await expect(service.redirect('fail')).rejects.toThrow(NotFoundException);
+  });
+
+  it('should update url if user is owner', async () => {
+    const url = { id: 1, ownerId: 1, shortCode: 'abc123' };
+    const dto: UpdateUrlDto = { originalUrl: 'https://nova-url.com' };
+
+    mockRepo.findByShortCode.mockResolvedValue(url);
+    mockRepo.updateUrl.mockResolvedValue(undefined);
+
+    await service.update('abc123', 1, dto);
+
+    expect(mockRepo.findByShortCode).toHaveBeenCalledWith('abc123');
+    expect(mockRepo.updateUrl).toHaveBeenCalledWith(url.id, dto.originalUrl);
+  });
+
+  it('should throw ForbiddenException if user is not owner', async () => {
+    const url = { id: 1, ownerId: 2, shortCode: 'abc123' };
+    const dto: UpdateUrlDto = { originalUrl: 'https://nova-url.com' };
+
+    mockRepo.findByShortCode.mockResolvedValue(url);
+
+    await expect(service.update('abc123', 1, dto)).rejects.toThrow(ForbiddenException);
+    expect(mockRepo.updateUrl).not.toHaveBeenCalled();
+  });
+
+  it('should throw ForbiddenException if url not found', async () => {
+    const dto: UpdateUrlDto = { originalUrl: 'https://nova-url.com' };
+
+    mockRepo.findByShortCode.mockResolvedValue(null);
+
+    await expect(service.update('abc123', 1, dto)).rejects.toThrow(ForbiddenException);
+    expect(mockRepo.updateUrl).not.toHaveBeenCalled();
   });
 
   it('should remove own url', async () => {

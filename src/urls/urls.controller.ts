@@ -16,16 +16,16 @@ import { CreateUrlDto } from './dto/create-url.dto';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { UpdateUrlDto } from './dto/update-url.dto';
 
-@Controller()
+@Controller('urls')
 export class UrlsController {
     constructor(private readonly urlsService: UrlsService) { }
 
     @UseGuards(OptionalJwtAuthGuard)
-    @Post('urls')
+    @Post()
     async create(@Body() dto: CreateUrlDto, @Req() req: Request) {
         const user = req.user as any;
-        console.log('req.user', user)
         const result = await this.urlsService.create(dto, user?.id);
         return {
             shortUrl: `${process.env.BASE_URL}/${result.shortCode}`,
@@ -33,7 +33,7 @@ export class UrlsController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('urls')
+    @Get()
     async findMine(@Req() req: Request) {
         const user = req.user as any;
         return this.urlsService.findByOwner(user.id);
@@ -52,7 +52,19 @@ export class UrlsController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Delete('urls/:code')
+    @Patch(':code')
+    async update(
+        @Param('code') code: string,
+        @Req() req: Request,
+        @Body() dto: UpdateUrlDto,
+    ) {
+        const user = req.user as any;
+        await this.urlsService.update(code, user.id, dto);
+        return { message: 'URL atualizada com sucesso' };
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete(':code')
     async remove(@Param('code') code: string, @Req() req: Request) {
         const user = req.user as any;
         return this.urlsService.remove(code, user.id);

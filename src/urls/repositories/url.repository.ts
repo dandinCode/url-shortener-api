@@ -23,8 +23,11 @@ export class UrlRepository {
     return this.repository.save(url);
   }
 
-  async updateUrl(id: number, data: Partial<Url>): Promise<void> {
-    await this.repository.update({ id }, data);
+  async updateUrl(id: number, originalUrl: string): Promise<void> {
+    await this.repository.update(id, {
+      originalUrl,
+      updatedAt: new Date(),
+    });
   }
 
   async deleteUrl(shortCode: string): Promise<void> {
