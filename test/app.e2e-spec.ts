@@ -52,7 +52,12 @@ describe('Auth E2E', () => {
     expect(res.body.shortUrl).toMatch(/http:\/\/localhost:3000\//);
 
     const code = res.body.shortUrl.split('/').pop();
-    await request(app.getHttpServer()).get(`/urls/${code}`).expect(302);
+    await request(app.getHttpServer())
+      .get(`/urls/${code}`)
+      .set('User-Agent', 'e2e-test-agent')
+      .set('Accept-Language', 'pt-BR')
+      .set('x-forwarded-for', '8.8.8.8') 
+      .expect(302);
   });
 
   it('should allow logged user to create and list URLs', async () => {

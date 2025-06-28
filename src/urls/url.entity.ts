@@ -6,9 +6,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
-  DeleteDateColumn
+  DeleteDateColumn,
+  OneToMany
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { AccessLog } from '../access-log/access-log.entity';
 
 @Entity()
 export class Url {
@@ -39,4 +41,7 @@ export class Url {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => AccessLog, (log) => log.url)
+  accessLogs: AccessLog[];
 }

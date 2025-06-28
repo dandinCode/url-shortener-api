@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/user.entity';
 import { Url } from './urls/url.entity';
+import { AccessLogModule } from './access-log/access-log.module';
 
 @Module({
   controllers: [AppController],
@@ -29,6 +30,7 @@ import { Url } from './urls/url.entity';
     UsersModule,
     AuthModule,
     UrlsModule,
+    AccessLogModule,
   ],
 })
 export class AppModule { }

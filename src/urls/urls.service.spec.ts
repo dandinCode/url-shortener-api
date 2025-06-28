@@ -4,6 +4,8 @@ import { UrlRepository } from './repositories/url.repository';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { UpdateUrlDto } from './dto/update-url.dto';
+import { Request } from 'express';
+import { AccessLogService } from '../access-log/access-log.service';
 
 const mockRepo = {
   createUrl: jest.fn(),
@@ -14,12 +16,16 @@ const mockRepo = {
   findByOwner: jest.fn(),
 };
 
+const mockAccessLogService = {
+  logAccess: jest.fn(),
+};
+
 describe('UrlsService', () => {
   let service: UrlsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UrlsService, { provide: UrlRepository, useValue: mockRepo }],
+      providers: [UrlsService, { provide: UrlRepository, useValue: mockRepo },  { provide: AccessLogService, useValue: mockAccessLogService }],
     }).compile();
 
     service = module.get<UrlsService>(UrlsService);
@@ -43,15 +49,31 @@ describe('UrlsService', () => {
     mockRepo.findByShortCode.mockResolvedValue({ id: 1, originalUrl: 'https://google.com' });
     mockRepo.incrementClicks.mockResolvedValue(undefined);
 
-    const result = await service.redirect('abc123');
+    const mockRequest: Partial<Request> = {
+      ip: '8.8.8.8',
+      headers: {
+        'user-agent': 'jest-test-agent',
+        'accept-language': 'en-US,en;q=0.9',
+      },
+    };
+
+    const result = await service.redirect('abc123', mockRequest as Request);
+
     expect(mockRepo.incrementClicks).toHaveBeenCalledWith(1);
     expect(result).toBe('https://google.com');
   });
 
-  it('should throw if url not found on redirect', async () => {
+ it('should throw if url not found on redirect', async () => {
     mockRepo.findByShortCode.mockResolvedValue(null);
-    await expect(service.redirect('fail')).rejects.toThrow(NotFoundException);
+
+    const mockRequest: Partial<Request> = {
+      ip: '8.8.8.8',
+      headers: {},
+    };
+
+    await expect(service.redirect('fail', mockRequest as Request)).rejects.toThrow(NotFoundException);
   });
+
 
   it('should update url if user is owner', async () => {
     const url = { id: 1, ownerId: 1, shortCode: 'abc123' };

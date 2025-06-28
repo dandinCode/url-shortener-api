@@ -60,7 +60,7 @@ export class UrlsController {
     @ApiResponse({ status: 302, description: 'Redirecionamento realizado' })
     @ApiParam({ name: 'shortCode', description: 'Código curto da URL encurtada' })
     async redirect(@Param('shortCode') shortCode: string, @Req() req: Request) {
-        const url = await this.urlsService.redirect(shortCode);
+        const url = await this.urlsService.redirect(shortCode, req);
         return {
             statusCode: 302,
             headers: {
