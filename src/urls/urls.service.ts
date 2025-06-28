@@ -7,7 +7,8 @@ import { UpdateUrlDto } from './dto/update-url.dto';
 import { AccessLogService } from '../access-log/access-log.service';
 import { Request } from 'express';
 import * as geoip from 'geoip-lite';
-import {UAParser} from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
+import { UrlAccessInfoDto } from './dto/url-access-info.dto';
 
 @Injectable()
 export class UrlsService {
@@ -69,6 +70,41 @@ export class UrlsService {
 
         await this.urlRepository.incrementClicks(url.id);
         return url.originalUrl;
+    }
+
+    async getAccessLogsByUser(userId: number): Promise<UrlAccessInfoDto[]> {
+        const urls = await this.urlRepository.findByOwner(userId);
+        const result: UrlAccessInfoDto[] = [];
+
+        for (const url of urls) {
+            const logs = await this.accessLogService.findByUrlId(url.id);
+
+            const grouped = logs.reduce((acc, log) => {
+                const key = log.ip || 'unknown';
+                if (!acc[key]) {
+                    acc[key] = {
+                        ip: log.ip,
+                        city: log.city,
+                        region: log.region,
+                        country: log.country,
+                        os: log.os,
+                        browser: log.browser,
+                        device: log.device,
+                        clicks: 0,
+                    };
+                }
+                acc[key].clicks++;
+                return acc;
+            }, {} as Record<string, any>);
+
+            result.push({
+                shortCode: url.shortCode,
+                originalUrl: url.originalUrl,
+                totalClicks: url.clicks,
+                accessByUser: Object.values(grouped),
+            });
+        }
+        return result;
     }
 
     async remove(code: string, userId: number): Promise<void> {

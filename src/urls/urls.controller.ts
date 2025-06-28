@@ -25,6 +25,7 @@ import {
     ApiBody,
     ApiParam,
 } from '@nestjs/swagger';
+import { UrlAccessInfoDto } from './dto/url-access-info.dto';
 
 @ApiTags('urls')
 @Controller('urls')
@@ -52,6 +53,16 @@ export class UrlsController {
     async findMine(@Req() req: Request) {
         const user = req.user as any;
         return this.urlsService.findByOwner(user.id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('access-logs')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Obter logs de acesso dos meus links encurtados' })
+    @ApiResponse({ status: 200, description: 'Retorna os logs agrupados por IP por cada URL.', type: UrlAccessInfoDto })
+    async getLogs(@Req() req: Request) {
+        const user = req.user as any;
+        return this.urlsService.getAccessLogsByUser(user.id);
     }
 
     @Get(':shortCode')

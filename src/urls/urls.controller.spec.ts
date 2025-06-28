@@ -3,6 +3,7 @@ import { UrlsController } from './urls.controller';
 import { UrlsService } from './urls.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { Request } from 'express';
+import { UrlAccessInfoDto } from './dto/url-access-info.dto';
 
 describe('UrlsController', () => {
   let controller: UrlsController;
@@ -14,6 +15,7 @@ describe('UrlsController', () => {
     findByOwner: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    getAccessLogsByUser: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -78,5 +80,35 @@ describe('UrlsController', () => {
     const req = { user: { id: 1 } } as unknown as Request;
     await controller.remove('abc123', req);
     expect(mockService.remove).toHaveBeenCalledWith('abc123', 1);
+  });
+
+  it('should get access logs grouped by user', async () => {
+    const fakeLogs: UrlAccessInfoDto[] = [
+      {
+        shortCode: 'abc123',
+        originalUrl: 'https://example.com',
+        totalClicks: 5,
+        accessByUser: [
+          {
+            ip: '123.45.67.89',
+            clicks: 3,
+            city: 'São Paulo',
+            region: 'SP',
+            country: 'BR',
+            os: 'Windows',
+            browser: 'Chrome',
+            device: 'desktop',
+          },
+        ],
+      },
+    ];
+    mockService.getAccessLogsByUser.mockResolvedValue(fakeLogs);
+
+    const req = { user: { id: 1 } } as unknown as Request;
+
+    const result = await controller.getLogs(req);
+
+    expect(result).toBe(fakeLogs);
+    expect(mockService.getAccessLogsByUser).toHaveBeenCalledWith(1);
   });
 });

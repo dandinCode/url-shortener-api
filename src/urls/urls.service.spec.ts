@@ -18,6 +18,7 @@ const mockRepo = {
 
 const mockAccessLogService = {
   logAccess: jest.fn(),
+  findByUrlId: jest.fn(),
 };
 
 describe('UrlsService', () => {
@@ -25,7 +26,7 @@ describe('UrlsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UrlsService, { provide: UrlRepository, useValue: mockRepo },  { provide: AccessLogService, useValue: mockAccessLogService }],
+      providers: [UrlsService, { provide: UrlRepository, useValue: mockRepo }, { provide: AccessLogService, useValue: mockAccessLogService }],
     }).compile();
 
     service = module.get<UrlsService>(UrlsService);
@@ -63,7 +64,7 @@ describe('UrlsService', () => {
     expect(result).toBe('https://google.com');
   });
 
- it('should throw if url not found on redirect', async () => {
+  it('should throw if url not found on redirect', async () => {
     mockRepo.findByShortCode.mockResolvedValue(null);
 
     const mockRequest: Partial<Request> = {
@@ -116,5 +117,61 @@ describe('UrlsService', () => {
   it('should forbid deletion of another users url', async () => {
     mockRepo.findByShortCode.mockResolvedValue({ ownerId: 2 });
     await expect(service.remove('abc123', 1)).rejects.toThrow(ForbiddenException);
+  });
+
+  it('should return access logs grouped by IP for user URLs', async () => {
+    mockRepo.findByOwner.mockResolvedValue([
+      { id: 1, shortCode: 'abc123', originalUrl: 'https://site.com', clicks: 5 },
+      { id: 2, shortCode: 'def456', originalUrl: 'https://outro.com', clicks: 3 },
+    ]);
+
+    mockAccessLogService.findByUrlId = jest.fn()
+      .mockResolvedValueOnce([
+        { ip: '1.1.1.1', city: 'City1', region: 'Region1', country: 'BR', os: 'Windows', browser: 'Chrome', device: 'desktop' },
+        { ip: '1.1.1.1', city: 'City1', region: 'Region1', country: 'BR', os: 'Windows', browser: 'Chrome', device: 'desktop' },
+        { ip: '2.2.2.2', city: 'City2', region: 'Region2', country: 'BR', os: 'Linux', browser: 'Firefox', device: 'mobile' },
+      ])
+      .mockResolvedValueOnce([]);
+
+    const result = await service.getAccessLogsByUser(1);
+
+    expect(mockRepo.findByOwner).toHaveBeenCalledWith(1);
+    expect(mockAccessLogService.findByUrlId).toHaveBeenCalledTimes(2);
+
+    expect(result).toEqual([
+      {
+        shortCode: 'abc123',
+        originalUrl: 'https://site.com',
+        totalClicks: 5,
+        accessByUser: [
+          {
+            ip: '1.1.1.1',
+            city: 'City1',
+            region: 'Region1',
+            country: 'BR',
+            os: 'Windows',
+            browser: 'Chrome',
+            device: 'desktop',
+            clicks: 2,
+          },
+          {
+            ip: '2.2.2.2',
+            city: 'City2',
+            region: 'Region2',
+            country: 'BR',
+            os: 'Linux',
+            browser: 'Firefox',
+            device: 'mobile',
+            clicks: 1,
+          },
+        ],
+      },
+      {
+        shortCode: 'def456',
+        originalUrl: 'https://outro.com',
+        totalClicks: 3,
+        accessByUser: [],
+      },
+    ]);
   });
 });

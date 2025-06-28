@@ -56,7 +56,7 @@ describe('Auth E2E', () => {
       .get(`/urls/${code}`)
       .set('User-Agent', 'e2e-test-agent')
       .set('Accept-Language', 'pt-BR')
-      .set('x-forwarded-for', '8.8.8.8') 
+      .set('x-forwarded-for', '8.8.8.8')
       .expect(302);
   });
 
@@ -116,5 +116,38 @@ describe('Auth E2E', () => {
       .delete(`/urls/${code}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
+  });
+
+  it('should return access logs for logged user', async () => {
+    const create = await request(app.getHttpServer())
+      .post('/urls')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ originalUrl: 'https://nestjs.com/accesslog' })
+      .expect(201);
+
+    const code = create.body.shortUrl.split('/').pop();
+
+    await request(app.getHttpServer())
+      .get(`/urls/${code}`)
+      .set('User-Agent', 'e2e-test-agent')
+      .set('Accept-Language', 'pt-BR')
+      .set('x-forwarded-for', '1.2.3.4')
+      .expect(302);
+
+    await new Promise((r) => setTimeout(r, 500));
+
+    const logs = await request(app.getHttpServer())
+      .get('/urls/access-logs')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(Array.isArray(logs.body)).toBe(true);
+    expect(logs.body.length).toBeGreaterThan(0);
+
+    const logEntry = logs.body.find((entry: any) => entry.shortCode === code);
+    expect(logEntry).toBeDefined();
+    expect(logEntry.accessByUser.length).toBeGreaterThan(0);
+    expect(logEntry.accessByUser[0].ip).toBe('1.2.3.4');
+    expect(logEntry.accessByUser[0].clicks).toBe(1);
   });
 });

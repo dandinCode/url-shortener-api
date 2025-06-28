@@ -14,4 +14,10 @@ export class AccessLogRepository {
         const log = this.repo.create(data);
         return this.repo.save(log);
     }
+
+    async findByUrlId(urlId: number): Promise<AccessLog[]> {
+        return this.repo.find({
+            where: { url: { id: urlId } },
+        });
+    }
 }

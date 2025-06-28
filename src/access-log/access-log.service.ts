@@ -9,4 +9,8 @@ export class AccessLogService {
     async logAccess(data: Partial<AccessLog>): Promise<AccessLog> {
         return this.repository.createLog(data);
     }
+
+    async findByUrlId(urlId: number): Promise<AccessLog[]> {
+        return this.repository.findByUrlId(urlId);
+    }
 }
