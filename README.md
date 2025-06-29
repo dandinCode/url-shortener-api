@@ -10,9 +10,8 @@ Este projeto se trata de uma API de um encurtador de link. Desenvolvido com Nest
 - [Configuração de ambiente](#configuração-de-ambiente)  
 - [Executando localmente](#executando-localmente)  
 - [Executando com Docker](#executando-com-docker)  
-- [Migrations](#migrations)  
 - [Testes](#testes)  
-- [Pontos de melhorias](#melhorias)  
+- [Pontos de melhorias](#pontos-de-melhorias) 
 
 ---
 
@@ -27,6 +26,7 @@ Este projeto se trata de uma API de um encurtador de link. Desenvolvido com Nest
   ```bash
   git clone https://github.com/dandinCode/url-shortener-api.git
   cd url-shortener-api
+  ```
 
 ---
 
@@ -47,44 +47,58 @@ Ao rodar via Docker, renomeie/copiar `.env.example` para `.env.docker` e configu
 ## Executando localmente
 
 1. Configure seu `.env` com as variáveis corretas,  especialmente `DB_HOST=localhost`.  
-2. Instale dependências:  
-   ```bash
-   npm install
-3. Execute as migrations para criar as tabelas no banco:
+2. Instale dependências:
+
+  ```bash
+  npm install
+  ```
+4. Execute as migrations para criar as tabelas no banco:
+
   ```bash
   npm run migration:run
+  ```
+
 4. Inicie a aplicação em modo desenvolvimento:
+
   ```bash
   npm run start:dev
+  ```
+
 5. A API estará disponível em http://localhost:3000
+
+---
 
 ## Executando com Docker
 
 1. Copie o arquivo .env.example para .env.docker e configure as variáveis de ambiente, especialmente `DB_HOST=db`.
 2. Execute o build e subida dos containers:
+   
   ```bash
   docker compose up --build
+  ```
+
 3. O Docker irá iniciar dois containers:
   - postgres_db: banco de dados PostgreSQL
   - url-shortener-api: aplicação Node.js com a API
-4. A aplicação estará disponível em http://localhost:3000.
+4. A aplicação estará disponível em http://localhost:3000
 
-## Migrations
-
-1. As migrations são usadas para versionar e criar/alterar a estrutura do banco.
-2. Comando para rodar as migrations:
-  ```bash
-  npm run migration:run
-3. No Docker, as migrations são executadas automaticamente antes do start da aplicação.
+---
 
 ## Testes
 
 1. Para rodar os testes end-to-end localmente, execute:
+ 
   ```bash
   npm run test:e2e
+  ```
 2. Para rodar os testes unitários localmente, execute:
+  
   ```bash
   npm run test
+  ```
+3. Para realizar testes manualmente na API acesse http://localhost:3000/api
+
+---
 
 ## Pontos de melhorias
 
