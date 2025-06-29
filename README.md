@@ -1,98 +1,95 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# URL Shortener API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este projeto se trata de uma API de um encurtador de link. Desenvolvido com NestJS, Typescrip, TypeORM e PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Sumário
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Pré-requisitos](#pré-requisitos)  
+- [Configuração de ambiente](#configuração-de-ambiente)  
+- [Executando localmente](#executando-localmente)  
+- [Executando com Docker](#executando-com-docker)  
+- [Migrations](#migrations)  
+- [Testes](#testes)  
+- [Pontos de melhorias](#melhorias)  
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## Pré-requisitos
 
-## Compile and run the project
+- Node.js (versão 22 ou superior recomendada)  
+- npm
+- Docker e Docker Compose (para execução via containers)  
+- PostgreSQL local (caso rode localmente sem Docker)  
+- Clonar este repositório:
 
-```bash
-# development
-$ npm run start
+  ```bash
+  git clone https://github.com/dandinCode/url-shortener-api.git
+  cd url-shortener-api
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## Configuração de ambiente
 
-## Run tests
+Este projeto utiliza arquivos `.env` para variáveis de ambiente:
 
-```bash
-# unit tests
-$ npm run test
+- `.env.example` — modelo base com todas as variáveis necessárias  
+- `.env` — para execução local, conecta ao banco local (`DB_HOST=localhost`)  
+- `.env.docker` — para execução no Docker, conecta ao container de banco (`DB_HOST=db`)  
 
-# e2e tests
-$ npm run test:e2e
+**Importante:**  
+Ao rodar localmente, renomeie/copiar `.env.example` para `.env` e configure suas variáveis.  
+Ao rodar via Docker, renomeie/copiar `.env.example` para `.env.docker` e configure conforme o ambiente.
 
-# test coverage
-$ npm run test:cov
-```
+---
 
-## Deployment
+## Executando localmente
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. Configure seu `.env` com as variáveis corretas,  especialmente `DB_HOST=localhost`.  
+2. Instale dependências:  
+   ```bash
+   npm install
+3. Execute as migrations para criar as tabelas no banco:
+  ```bash
+  npm run migration:run
+4. Inicie a aplicação em modo desenvolvimento:
+  ```bash
+  npm run start:dev
+5. A API estará disponível em http://localhost:3000
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Executando com Docker
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+1. Copie o arquivo .env.example para .env.docker e configure as variáveis de ambiente, especialmente `DB_HOST=db`.
+2. Execute o build e subida dos containers:
+  ```bash
+  docker compose up --build
+3. O Docker irá iniciar dois containers:
+  - postgres_db: banco de dados PostgreSQL
+  - url-shortener-api: aplicação Node.js com a API
+4. A aplicação estará disponível em http://localhost:3000.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Migrations
 
-## Resources
+1. As migrations são usadas para versionar e criar/alterar a estrutura do banco.
+2. Comando para rodar as migrations:
+  ```bash
+  npm run migration:run
+3. No Docker, as migrations são executadas automaticamente antes do start da aplicação.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Testes
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+1. Para rodar os testes end-to-end localmente, execute:
+  ```bash
+  npm run test:e2e
+2. Para rodar os testes unitários localmente, execute:
+  ```bash
+  npm run test
 
-## Support
+## Pontos de melhorias
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+1. Monitorar o sistema
+- Quando o sistema começar a crescer e rodar em várias máquinas, ficará difícil saber se tudo está funcionando bem só olhando no terminal.
+- Por isso, é importante ter ferramentas que reúnam logs das máquinas num lugar só, mostrem se a aplicação está com erros, lentidão, ou caiu e permitam criar alertas para avisar caso algo der errado
+2. Consistência dos dados no banco
+- Em um servidor de verdade provavelmente terão várias máquinas rodando a API, todas elas vão tentar acessar e modificar os dados ao mesmo tempo. É importante garantir que as atualizações (como contagem de cliques) sejam feitas de forma segura para não perder dados.  
