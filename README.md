@@ -96,7 +96,7 @@ Ao rodar via Docker, renomeie/copiar `.env.example` para `.env.docker` e configu
   ```bash
   npm run test
   ```
-3. Para realizar testes manualmente na API acesse http://localhost:3000/api
+3. Para realizar testes manualmente na API, rode a API (localmente ou pelo Docker), acesse http://localhost:3000/api e teste através do Swagger.
 
 ---
 
